@@ -1,1 +1,1 @@
-alert("Hello World");
+alert("Hello, It's Play (E) Tiny 01"):
