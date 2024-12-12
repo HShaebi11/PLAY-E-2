@@ -675,7 +675,7 @@ const sketch = function(p) {
 // Create P5 instance
 new p5(sketch);
 
-// Update existing renderer settings instead of creating new one
+// Update existing renderer settings
 renderer.setClearColor(0x000000, 0);
 renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
 
@@ -705,23 +705,23 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Add these styles programmatically
-const style = document.createElement('style');
-style.textContent = `
-    #p5-container, #three-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-    #p5-container {
-        z-index: 1;
-    }
-    #three-container {
-        z-index: 2;
-        pointer-events: auto;
-        background: transparent;
-    }
-`;
-document.head.appendChild(style);
+// Add container styles
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        #p5-container, #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #p5-container {
+            z-index: 1;
+        }
+        #three-container {
+            z-index: 2;
+            pointer-events: auto;
+            background: transparent;
+        }
+    </style>
+`);
