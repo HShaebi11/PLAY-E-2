@@ -397,6 +397,64 @@ function updateValueDisplay() {
     }
 }
 
+// Add export button to controls
+function addExportButton() {
+    const exportDiv = document.createElement('div');
+    exportDiv.className = 'value-group';
+    exportDiv.innerHTML = `
+        <div class="header-with-reset">
+            <h4>Export</h4>
+            <button class="export-btn" id="exportPDF">Export as PDF</button>
+        </div>
+    `;
+    
+    // Add export button styles
+    const style = document.createElement('style');
+    style.textContent += `
+        .export-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .export-btn:hover {
+            background: #45a049;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.querySelector('.controls').appendChild(exportDiv);
+    document.getElementById('exportPDF').addEventListener('click', captureAndExport);
+}
+
+// Separate capture and export functions
+function captureAndExport() {
+    // Force a render to ensure latest state
+    renderer.render(scene, camera);
+    
+    // Get the canvas
+    const canvas = renderer.domElement;
+    
+    // Create a temporary canvas with white background
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const ctx = tempCanvas.getContext('2d');
+    
+    // Fill with white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw the WebGL canvas on top
+    ctx.drawImage(canvas, 0, 0);
+    
+    // Get the image data
+}
+
 // Load the 3D model
 loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
@@ -429,6 +487,7 @@ loader.load(
         // Attach transform controls to model
         setupTransformControls();
         createValueDisplay();  // Add value display
+        addExportButton();  // Add export button
         transformControls.attach(model);
         
         scene.add(model);
