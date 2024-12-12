@@ -639,32 +639,34 @@ let p5Canvas;
 
 let particles = [];
 
+// P5.js setup with bright, obvious visuals
 const sketch = function(p) {
     p.setup = function() {
         const container = document.querySelector('#p5-container');
         p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
         p5Canvas.parent('p5-container');
         
-        // Ensure P5 canvas is visible
+        // Debug styling
         p5Canvas.style('position', 'absolute');
         p5Canvas.style('top', '0');
         p5Canvas.style('left', '0');
-        p5Canvas.style('z-index', '-1'); // Put behind Three.js
-        
-        p.background(240);
+        p5Canvas.style('z-index', '0'); // Changed to 0
     };
 
     p.draw = function() {
-        // Make background more visible
-        p.background(240, 200); // Light background with higher opacity
-        let noiseScale = 0.02;
-        for(let x = 0; x < p.width; x += 10) {
-            for(let y = 0; y < p.height; y += 10) {
-                let noiseVal = p.noise(x * noiseScale, y * noiseScale, p.frameCount * 0.01);
-                p.stroke(noiseVal * 255);
-                p.strokeWeight(2); // Make points more visible
-                p.point(x + noiseVal * 5, y + noiseVal * 5);
-            }
+        // Bright, obvious background pattern
+        p.background(0); // Black background
+        p.noStroke();
+        
+        // Draw bright moving circles
+        for(let i = 0; i < 5; i++) {
+            p.fill(255, 0, 0); // Bright red
+            let x = (p.frameCount + i * 100) % p.width;
+            p.circle(x, p.height/2, 50);
+            
+            p.fill(0, 255, 0); // Bright green
+            let y = (p.frameCount + i * 100) % p.height;
+            p.circle(p.width/2, y, 50);
         }
     };
 
@@ -677,14 +679,15 @@ const sketch = function(p) {
 // Create P5 instance
 new p5(sketch);
 
-// Three.js renderer setup with proper transparency
+// Three.js renderer setup
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     preserveDrawingBuffer: true,
     alpha: true
 });
 
-renderer.setClearColor(0x000000, 0);
+// Debug setup for Three.js
+renderer.setClearColor(0x000000, 0); // Transparent background
 renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
 threeContainer.appendChild(renderer.domElement);
 
@@ -692,11 +695,30 @@ threeContainer.appendChild(renderer.domElement);
 renderer.domElement.style.position = 'absolute';
 renderer.domElement.style.top = '0';
 renderer.domElement.style.left = '0';
-renderer.domElement.style.zIndex = '1'; // Above P5.js
+renderer.domElement.style.zIndex = '1';
 renderer.domElement.style.background = 'transparent';
+renderer.domElement.style.pointerEvents = 'auto';
 
-// Make sure scene background is transparent
+// Make scene background transparent
 scene.background = null;
+
+// Add some console logs for debugging
+console.log('P5 container:', document.querySelector('#p5-container'));
+console.log('Three.js container:', document.querySelector('#three-container'));
+console.log('P5 canvas:', p5Canvas);
+console.log('Three.js canvas:', renderer.domElement);
+
+// Update animation function
+function animate() {
+    requestAnimationFrame(animate);
+    
+    // Clear with transparency
+    renderer.clear();
+    
+    if (model) {
+        renderer.render(scene, camera);
+    }
+}
 
 // Update the three.js container style
 const threeContainer = document.getElementById('three-container');
