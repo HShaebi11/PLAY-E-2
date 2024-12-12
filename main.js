@@ -88,6 +88,22 @@ let controls = {
 
 // Setup control listeners
 function setupControls() {
+    const controlsDiv = document.querySelector('.controls');
+    if (!controlsDiv) {
+        const div = document.createElement('div');
+        div.className = 'controls';
+        div.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            color: white;
+            z-index: 100;
+            pointer-events: auto;
+        `;
+        document.body.appendChild(div);
+    }
     // Position controls
     document.getElementById('posX').addEventListener('input', (e) => {
         controls.position.x = parseFloat(e.target.value);
@@ -203,17 +219,17 @@ function createValueDisplay() {
         <div class="value-group">
             <h4>Position</h4>
             <div class="input-group">
-                X: <input type="number" id="posX-text" step="0.1" value="0">
-                Y: <input type="number" id="posY-text" step="0.1" value="0">
-                Z: <input type="number" id="posZ-text" step="0.1" value="0">
+                X: <input type="number" id="posX-text" step="0.1" value="0" style="color: black;">
+                Y: <input type="number" id="posY-text" step="0.1" value="0" style="color: black;">
+                Z: <input type="number" id="posZ-text" step="0.1" value="0" style="color: black;">
             </div>
         </div>
         <div class="value-group">
             <h4>Rotation</h4>
             <div class="input-group">
-                X: <input type="number" id="rotX-text" step="0.1" value="0">
-                Y: <input type="number" id="rotY-text" step="0.1" value="0">
-                Z: <input type="number" id="rotZ-text" step="0.1" value="0">
+                X: <input type="number" id="rotX-text" step="0.1" value="0" style="color: black;">
+                Y: <input type="number" id="rotY-text" step="0.1" value="0" style="color: black;">
+                Z: <input type="number" id="rotZ-text" step="0.1" value="0" style="color: black;">
             </div>
         </div>
         <div class="value-group">
@@ -240,10 +256,16 @@ function createValueDisplay() {
         .input-group input {
             width: 60px;
             background: rgba(255,255,255,0.9);
-            border: none;
+            border: 1px solid #666;
             padding: 3px;
             border-radius: 3px;
             color: black;
+            cursor: text;
+            pointer-events: auto;
+        }
+        .input-group input:focus {
+            outline: 2px solid #0066ff;
+            background: white;
         }
         h4 {
             margin: 0;
@@ -257,18 +279,22 @@ function createValueDisplay() {
     // Add event listeners for text inputs
     ['X', 'Y', 'Z'].forEach(axis => {
         // Position text inputs
-        document.getElementById(`pos${axis}-text`).addEventListener('change', (e) => {
-            if (model) {
-                model.position[axis.toLowerCase()] = parseFloat(e.target.value);
-                document.getElementById(`pos${axis}`).value = e.target.value; // Update slider
+        const posInput = document.getElementById(`pos${axis}-text`);
+        posInput.addEventListener('input', (e) => {
+            if (model && !isNaN(e.target.value)) {
+                const value = parseFloat(e.target.value);
+                model.position[axis.toLowerCase()] = value;
+                document.getElementById(`pos${axis}`).value = value; // Update slider
             }
         });
 
         // Rotation text inputs
-        document.getElementById(`rot${axis}-text`).addEventListener('change', (e) => {
-            if (model) {
-                model.rotation[axis.toLowerCase()] = parseFloat(e.target.value);
-                document.getElementById(`rot${axis}`).value = e.target.value; // Update slider
+        const rotInput = document.getElementById(`rot${axis}-text`);
+        rotInput.addEventListener('input', (e) => {
+            if (model && !isNaN(e.target.value)) {
+                const value = parseFloat(e.target.value);
+                model.rotation[axis.toLowerCase()] = value;
+                document.getElementById(`rot${axis}`).value = value; // Update slider
             }
         });
     });
