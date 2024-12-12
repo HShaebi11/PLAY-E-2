@@ -641,44 +641,33 @@ let particles = [];
 
 const sketch = function(p) {
     p.setup = function() {
-        // Initial setup - runs once
         const container = document.querySelector('#p5-container');
         p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
         p5Canvas.parent('p5-container');
         
-        // Create particles
-        for(let i = 0; i < 100; i++) {
-            particles.push({
-                x: p.random(p.width),
-                y: p.random(p.height),
-                size: p.random(2, 5)
-            });
-        }
+        // Ensure P5 canvas is visible
+        p5Canvas.style('position', 'absolute');
+        p5Canvas.style('top', '0');
+        p5Canvas.style('left', '0');
+        p5Canvas.style('z-index', '-1'); // Put behind Three.js
+        
+        p.background(240);
     };
 
     p.draw = function() {
-        p.background(240);
-        
-        let rows = 50;
-        let cols = 50;
-        let cellWidth = p.width / cols;
-        let cellHeight = p.height / rows;
-        
-        for(let i = 0; i < cols; i++) {
-            for(let j = 0; j < rows; j++) {
-                let x = i * cellWidth;
-                let y = j * cellHeight;
-                let angle = p.frameCount * 0.05 + (i + j) * 0.1;
-                let size = p.sin(angle) * 10;
-                
-                p.fill(0, 50);
-                p.noStroke();
-                p.circle(x, y, size);
+        // Make background more visible
+        p.background(240, 200); // Light background with higher opacity
+        let noiseScale = 0.02;
+        for(let x = 0; x < p.width; x += 10) {
+            for(let y = 0; y < p.height; y += 10) {
+                let noiseVal = p.noise(x * noiseScale, y * noiseScale, p.frameCount * 0.01);
+                p.stroke(noiseVal * 255);
+                p.strokeWeight(2); // Make points more visible
+                p.point(x + noiseVal * 5, y + noiseVal * 5);
             }
         }
     };
 
-    // Resize canvas when window size changes
     p.windowResized = function() {
         const container = document.querySelector('#p5-container');
         p.resizeCanvas(container.offsetWidth, container.offsetHeight);
@@ -687,6 +676,27 @@ const sketch = function(p) {
 
 // Create P5 instance
 new p5(sketch);
+
+// Three.js renderer setup with proper transparency
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    preserveDrawingBuffer: true,
+    alpha: true
+});
+
+renderer.setClearColor(0x000000, 0);
+renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
+threeContainer.appendChild(renderer.domElement);
+
+// Set Three.js canvas style
+renderer.domElement.style.position = 'absolute';
+renderer.domElement.style.top = '0';
+renderer.domElement.style.left = '0';
+renderer.domElement.style.zIndex = '1'; // Above P5.js
+renderer.domElement.style.background = 'transparent';
+
+// Make sure scene background is transparent
+scene.background = null;
 
 // Update the three.js container style
 const threeContainer = document.getElementById('three-container');
