@@ -82,7 +82,8 @@ const modelColor = 0xff0000; // Red color (change this hex value as needed)
 let controls = {
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
-    color: 0xff0000
+    color: 0xff0000,
+    scale: 1
 };
 
 // Setup control listeners
@@ -113,6 +114,22 @@ function setupControls() {
     document.getElementById('rotZ').addEventListener('input', (e) => {
         controls.rotation.z = parseFloat(e.target.value);
         if (model) model.rotation.z = controls.rotation.z;
+    });
+
+    // Add scale slider HTML
+    const scaleDiv = document.createElement('div');
+    scaleDiv.innerHTML = `
+        <h3>Scale</h3>
+        <label>Size: <input type="range" id="modelScale" min="0.1" max="5" step="0.1" value="1"></label>
+    `;
+    document.querySelector('.controls').appendChild(scaleDiv);
+
+    // Add scale slider listener
+    document.getElementById('modelScale').addEventListener('input', (e) => {
+        const scale = parseFloat(e.target.value);
+        if (model) {
+            model.scale.set(scale, scale, scale);
+        }
     });
 
     // Color control
@@ -172,6 +189,9 @@ loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
     function (gltf) {
         model = gltf.scene;
+        
+        // Apply initial scale
+        model.scale.set(controls.scale, controls.scale, controls.scale);
         
         // Apply initial position
         model.position.set(controls.position.x, controls.position.y, controls.position.z);
