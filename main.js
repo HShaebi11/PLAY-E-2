@@ -631,29 +631,50 @@ transformControls.addEventListener('objectChange', () => {
 // Add P5.js sketch
 let p5Canvas;
 
+let particles = [];
+
 const sketch = function(p) {
     p.setup = function() {
-        // Create canvas that matches parent size
-        const container = document.querySelector('#three-container').parentElement;
+        // Initial setup - runs once
+        const container = document.querySelector('#p5-container');
         p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        p5Canvas.parent('three-container');
-        p5Canvas.style('position', 'absolute');
-        p5Canvas.style('z-index', '-1');
+        p5Canvas.parent('p5-container');
         
-        // Set initial background
-        p.background(240);
+        // Create particles
+        for(let i = 0; i < 100; i++) {
+            particles.push({
+                x: p.random(p.width),
+                y: p.random(p.height),
+                size: p.random(2, 5)
+            });
+        }
     };
 
     p.draw = function() {
-        let c = p.color(p.sin(p.frameCount * 0.01) * 127 + 128, 
-                        p.sin(p.frameCount * 0.02) * 127 + 128,
-                        p.sin(p.frameCount * 0.03) * 127 + 128);
-        p.background(c);
+        p.background(240);
+        
+        let rows = 50;
+        let cols = 50;
+        let cellWidth = p.width / cols;
+        let cellHeight = p.height / rows;
+        
+        for(let i = 0; i < cols; i++) {
+            for(let j = 0; j < rows; j++) {
+                let x = i * cellWidth;
+                let y = j * cellHeight;
+                let angle = p.frameCount * 0.05 + (i + j) * 0.1;
+                let size = p.sin(angle) * 10;
+                
+                p.fill(0, 50);
+                p.noStroke();
+                p.circle(x, y, size);
+            }
+        }
     };
 
-    // Handle window resize
+    // Resize canvas when window size changes
     p.windowResized = function() {
-        const container = document.querySelector('#three-container').parentElement;
+        const container = document.querySelector('#p5-container');
         p.resizeCanvas(container.offsetWidth, container.offsetHeight);
     };
 };
