@@ -16,26 +16,34 @@ window.addEventListener('load', () => {
     if (!renderer) {
         renderer = new THREE.WebGLRenderer({
             antialias: true,
-            alpha: true,  // Enable alpha
+            alpha: true,
             preserveDrawingBuffer: true
         });
     }
     
     // Setup renderer for transparency
-    renderer.setClearColor(0x000000, 0);  // Set clear color with 0 alpha
+    renderer.setClearColor(0x000000, 0);
     renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
     threeContainer.appendChild(renderer.domElement);
 
-    // Make scene background transparent
-    scene.background = null;  // This makes the scene background transparent
+    // Make scene background transparent but keep objects visible
+    scene.background = null;
 
-    // Style Three.js canvas for transparency
+    // Add ambient light to ensure model is visible
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    // Add directional light for better visibility
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(0, 1, 1);
+    scene.add(directionalLight);
+
+    // Style Three.js canvas
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0';
     renderer.domElement.style.left = '0';
     renderer.domElement.style.zIndex = '2';
     renderer.domElement.style.pointerEvents = 'auto';
-    renderer.domElement.style.background = 'transparent';  // Ensure canvas background is transparent
 
     // Initialize controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -58,7 +66,7 @@ window.addEventListener('load', () => {
         });
     }
 
-    // Animation loop with transparency
+    // Animation loop
     function animate() {
         requestAnimationFrame(animate);
         
@@ -66,8 +74,6 @@ window.addEventListener('load', () => {
             controls.update();
         }
         
-        // Clear with transparency before rendering
-        renderer.clear();
         renderer.render(scene, camera);
     }
 
@@ -80,11 +86,20 @@ window.addEventListener('load', () => {
         'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
         function (gltf) {
             model = gltf.scene;
+            
+            // Center the model
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+            model.position.sub(center);
+            
             scene.add(model);
             setupTransformControls();
             transformControls.attach(model);
             createValueDisplay();
             addExportButton();
+            
+            // Ensure initial render
+            renderer.render(scene, camera);
         },
         function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
