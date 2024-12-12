@@ -1,182 +1,93 @@
 // Global variables
-let controls, transformControls, model, scene, camera, renderer;
+let controls;
+let transformControls;
+let model;
+let scene;
+let camera;
 
-// Initialize Three.js scene and components
-function initThreeJS() {
+// Wait for THREE to be loaded before initializing
+window.addEventListener('load', () => {
+    // Initialize Three.js first
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
+    camera.position.z = 5; // Move camera back to see the model
 
-    renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true,
-        preserveDrawingBuffer: true
-    });
+    // Initialize renderer if not already done
+    if (!renderer) {
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+            preserveDrawingBuffer: true
+        });
+    }
     
+    // Setup renderer
     renderer.setClearColor(0x000000, 0);
     renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
     threeContainer.appendChild(renderer.domElement);
 
-    scene.background = null;
+    // Style Three.js canvas
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.zIndex = '2';
+    renderer.domElement.style.pointerEvents = 'auto';
 
-    // Add lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(0, 1, 1);
-    scene.add(dirLight);
-
-    // Style renderer canvas
-    Object.assign(renderer.domElement.style, {
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        zIndex: '2',
-        pointerEvents: 'auto'
-    });
-}
-
-// Initialize controls
-function initControls() {
-    if (controls) controls.dispose();
-    
+    // Initialize controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-}
 
-// Setup transform controls
-function setupTransformControls() {
-    if (transformControls) transformControls.dispose();
-    
-    transformControls = new THREE.TransformControls(camera, renderer.domElement);
-    scene.add(transformControls);
+    // Setup transform controls
+    function setupTransformControls() {
+        transformControls = new THREE.TransformControls(camera, renderer.domElement);
+        scene.add(transformControls);
 
-    transformControls.addEventListener('change', () => renderer.render(scene, camera));
-    transformControls.addEventListener('dragging-changed', event => {
-        if (controls) controls.enabled = !event.value;
-    });
-}
+        transformControls.addEventListener('change', () => {
+            renderer.render(scene, camera);
+        });
 
-// Animation loop
-const animate = () => {
-    requestAnimationFrame(animate);
-    if (controls) controls.update();
-    renderer.render(scene, camera);
-};
-
-// Handle window resize
-const onWindowResize = () => {
-    const container = document.getElementById('three-container');
-    const width = container.offsetWidth;
-    const height = container.offsetHeight;
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-};
-
-// Initialize everything on load
-window.addEventListener('load', () => {
-    // Check WebGL compatibility
-    if (!THREE.WEBGL.isWebGLAvailable()) {
-        const warning = THREE.WEBGL.getWebGLErrorMessage();
-        document.getElementById('three-container').appendChild(warning);
-        throw new Error('WebGL not available');
+        transformControls.addEventListener('dragging-changed', function (event) {
+            if (controls) {
+                controls.enabled = !event.value;
+            }
+        });
     }
 
-    initThreeJS();
-    initControls();
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        if (controls) {
+            controls.update();
+        }
+        
+        renderer.render(scene, camera);
+    }
+
+    // Start animation
     animate();
 
     // Load model
     const loader = new THREE.GLTFLoader();
     loader.load(
         'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
-        gltf => {
+        function (gltf) {
             model = gltf.scene;
-            
-            // Center model
-            const box = new THREE.Box3().setFromObject(model);
-            model.position.sub(box.getCenter(new THREE.Vector3()));
-            
             scene.add(model);
             setupTransformControls();
             transformControls.attach(model);
             createValueDisplay();
             addExportButton();
-            
-            renderer.render(scene, camera);
         },
-        xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
-        error => console.error('Loading error:', error)
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        function (error) {
+            console.error('An error happened:', error);
+        }
     );
 
+    // Handle window resize
     window.addEventListener('resize', onWindowResize, false);
 });
-
-// Cleanup on unload
-window.addEventListener('unload', () => {
-    controls?.dispose();
-    transformControls?.dispose();
-    renderer?.dispose();
-});
-
-// Get container dimensions
-const container = document.getElementById('three-container');
-const parentWidth = container.clientWidth;
-const parentHeight = container.clientHeight;
-
-// Configuration 
-const CONFIG = {
-    version: '1.0.0',
-    model: {
-        position: {x: 0, y: 0, z: 0},
-        rotation: {x: 0.01, y: 0.01, z: 0},
-        scale: {x: 2, y: 2, z: 2},
-    },
-    camera: {
-        position: {x: 0, y: 0, z: 10}
-    }
-};
-
-// Control state
-const controlState = {
-    position: {x: 0, y: 0, z: 0},
-    rotation: {x: 0, y: 0, z: 0},
-    color: 0xff0000,
-    scale: 1
-};
-
-// Setup UI controls
-function setupControls() {
-    const controlsDiv = document.querySelector('.controls') || createControlsDiv();
-    
-    setupPositionControls();
-    setupRotationControls();
-    setupScaleControls();
-    setupColorControls();
-}
-
-function createControlsDiv() {
-    const div = document.createElement('div');
-    div.className = 'controls';
-    div.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.7);
-        padding: 20px;
-        color: white;
-        z-index: 100;
-        pointer-events: auto;
-    `;
-    document.body.appendChild(div);
-    return div;
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', setupControls);
-
-// Rest of the code remains the same...
-// (The remaining functions like setupTransformControls, createValueDisplay, etc. 
-// can be kept as is since they're already well-structured)
