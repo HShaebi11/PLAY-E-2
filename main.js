@@ -1,15 +1,16 @@
 // Add WebGL compatibility check at the start
-if ( !THREE.WEBGL.isWebGLAvailable() ) {
+if (!THREE.WEBGL.isWebGLAvailable()) {
     const warning = THREE.WEBGL.getWebGLErrorMessage();
     document.getElementById('three-container').appendChild(warning);
 }
 
-// Set up renderer with specific Safari-friendly settings
+// Set up renderer with specific Safari-friendly settings 
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     preserveDrawingBuffer: true,
     alpha: true
 });
+renderer.setClearColor(0x000000, 0); // Transparent background
 
 // Add pixel ratio handling for Retina displays
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -668,11 +669,3 @@ threeContainer.style.cssText += `
     height: 100vh;
     background: transparent;
 `;
-
-// Make sure Three.js renderer is transparent
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    preserveDrawingBuffer: true,
-    alpha: true
-});
-renderer.setClearColor(0x000000, 0); // Transparent background
