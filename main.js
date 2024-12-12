@@ -19,6 +19,20 @@ renderer.setPixelRatio(window.devicePixelRatio);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
+// Enhance lighting setup
+const light = new THREE.DirectionalLight(0xffffff, 2); // Increased intensity
+light.position.set(5, 5, 5);
+scene.add(light);
+
+// Add more lights for better visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Brighter ambient light
+scene.add(ambientLight);
+
+// Add a point light
+const pointLight = new THREE.PointLight(0xffffff, 1);
+pointLight.position.set(0, 5, 0);
+scene.add(pointLight);
+
 // Get parent element dimensions
 const container = document.getElementById('three-container');
 const parentWidth = container.clientWidth;
@@ -84,14 +98,17 @@ loader.load(
             CONFIG.model.position.z
         );
 
-        // Apply color to all materials
+        // Enhanced material setup
         model.traverse((child) => {
             if (child.isMesh) {
-                child.material = new THREE.MeshPhongMaterial({
-                    color: CONFIG.model.color,
-                    emissive: 0x222222,
-                    shininess: 30
+                child.material = new THREE.MeshStandardMaterial({
+                    color: modelColor,
+                    metalness: 0.3,
+                    roughness: 0.4,
+                    emissive: modelColor,
+                    emissiveIntensity: 0.2
                 });
+                child.material.needsUpdate = true;
             }
         });
         
