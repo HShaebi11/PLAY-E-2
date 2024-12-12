@@ -78,34 +78,80 @@ const CONFIG = {
 // Simple color variable at the top
 const modelColor = 0xff0000; // Red color (change this hex value as needed)
 
+// Control variables
+let controls = {
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+    color: 0xff0000
+};
+
+// Setup control listeners
+function setupControls() {
+    // Position controls
+    document.getElementById('posX').addEventListener('input', (e) => {
+        controls.position.x = parseFloat(e.target.value);
+        if (model) model.position.x = controls.position.x;
+    });
+    document.getElementById('posY').addEventListener('input', (e) => {
+        controls.position.y = parseFloat(e.target.value);
+        if (model) model.position.y = controls.position.y;
+    });
+    document.getElementById('posZ').addEventListener('input', (e) => {
+        controls.position.z = parseFloat(e.target.value);
+        if (model) model.position.z = controls.position.z;
+    });
+
+    // Rotation controls
+    document.getElementById('rotX').addEventListener('input', (e) => {
+        controls.rotation.x = parseFloat(e.target.value);
+        if (model) model.rotation.x = controls.rotation.x;
+    });
+    document.getElementById('rotY').addEventListener('input', (e) => {
+        controls.rotation.y = parseFloat(e.target.value);
+        if (model) model.rotation.y = controls.rotation.y;
+    });
+    document.getElementById('rotZ').addEventListener('input', (e) => {
+        controls.rotation.z = parseFloat(e.target.value);
+        if (model) model.rotation.z = controls.rotation.z;
+    });
+
+    // Color control
+    document.getElementById('modelColor').addEventListener('input', (e) => {
+        controls.color = e.target.value;
+        if (model) {
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.color.setStyle(controls.color);
+                    child.material.emissive.setStyle(controls.color);
+                }
+            });
+        }
+    });
+}
+
+// Call setup after DOM is loaded
+document.addEventListener('DOMContentLoaded', setupControls);
+
 // Load the 3D model
 loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
     function (gltf) {
         model = gltf.scene;
         
-        // Apply scale
-        model.scale.set(
-            CONFIG.model.scale.x,
-            CONFIG.model.scale.y,
-            CONFIG.model.scale.z
-        );
-        
         // Apply initial position
-        model.position.set(
-            CONFIG.model.position.x,
-            CONFIG.model.position.y,
-            CONFIG.model.position.z
-        );
+        model.position.set(controls.position.x, controls.position.y, controls.position.z);
+        
+        // Apply initial rotation
+        model.rotation.set(controls.rotation.x, controls.rotation.y, controls.rotation.z);
 
-        // Enhanced material setup
+        // Apply material and color
         model.traverse((child) => {
             if (child.isMesh) {
                 child.material = new THREE.MeshStandardMaterial({
-                    color: modelColor,
+                    color: controls.color,
                     metalness: 0.3,
                     roughness: 0.4,
-                    emissive: modelColor,
+                    emissive: controls.color,
                     emissiveIntensity: 0.2
                 });
                 child.material.needsUpdate = true;
@@ -158,12 +204,7 @@ function animate() {
     requestAnimationFrame(animate);
     
     if (model) {
-        // Apply rotation speeds
-        model.rotation.x += CONFIG.model.rotation.x;
-        model.rotation.y += CONFIG.model.rotation.y;
-        model.rotation.z += CONFIG.model.rotation.z;
-        
-        // Mouse follow
+        // Only apply mouse follow, rotations now controlled by sliders
         model.position.x += (target.x - model.position.x) * 0.05;
         model.position.y += (target.y - model.position.y) * 0.05;
     }
