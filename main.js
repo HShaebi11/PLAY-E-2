@@ -675,17 +675,9 @@ const sketch = function(p) {
 // Create P5 instance
 new p5(sketch);
 
-// Three.js renderer setup
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    preserveDrawingBuffer: true,
-    alpha: true
-});
-
-// Set up renderer
-renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
-threeContainer.appendChild(renderer.domElement);
+// Update existing renderer settings instead of creating new one
 renderer.setClearColor(0x000000, 0);
+renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
 
 // Style Three.js canvas
 renderer.domElement.style.position = 'absolute';
