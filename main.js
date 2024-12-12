@@ -13,18 +13,35 @@ const parentHeight = container.clientHeight;
 renderer.setSize(parentWidth, parentHeight);
 container.appendChild(renderer.domElement);
 
-// Create geometry and material
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 }); // Green color
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+// Add GLTFLoader
+const loader = new THREE.GLTFLoader();
 
-// Add lights
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(1, 1, 1);
-scene.add(light);
-const ambientLight = new THREE.AmbientLight(0x404040);
-scene.add(ambientLight);
+let model; // Define model variable to use it in animation
+
+// Load the 3D model
+loader.load(
+    'YOUR_MODEL_URL.glb', // Replace with your model URL
+    function (gltf) {
+        model = gltf.scene;
+        // Center the model
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        model.position.x += model.position.x - center.x;
+        model.position.y += model.position.y - center.y;
+        model.position.z += model.position.z - center.z;
+        
+        // Adjust model scale if needed
+        model.scale.set(1, 1, 1); // Adjust these values as needed
+        
+        scene.add(model);
+    },
+    function (xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    },
+    function (error) {
+        console.error('An error happened:', error);
+    }
+);
 
 // Position camera
 camera.position.z = 5;
@@ -50,11 +67,13 @@ window.addEventListener('mousemove', onMouseMove);
 function animate() {
     requestAnimationFrame(animate);
     
-    // Smooth cube rotation based on mouse position
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    cube.position.x += (target.x - cube.position.x) * 0.05;
-    cube.position.y += (target.y - cube.position.y) * 0.05;
+    if (model) {
+        // Smooth model rotation and position based on mouse position
+        model.rotation.x += 0.01;
+        model.rotation.y += 0.01;
+        model.position.x += (target.x - model.position.x) * 0.05;
+        model.position.y += (target.y - model.position.y) * 0.05;
+    }
     
     renderer.render(scene, camera);
 }
