@@ -217,7 +217,10 @@ function createValueDisplay() {
     displayDiv.innerHTML = `
         <h3>Model Values</h3>
         <div class="value-group">
-            <h4>Position</h4>
+            <div class="header-with-reset">
+                <h4>Position</h4>
+                <button class="reset-btn" id="resetPosition">Reset</button>
+            </div>
             <div class="input-group">
                 X: <input type="number" id="posX-text" step="0.1" value="0" style="color: black;">
                 Y: <input type="number" id="posY-text" step="0.1" value="0" style="color: black;">
@@ -225,7 +228,10 @@ function createValueDisplay() {
             </div>
         </div>
         <div class="value-group">
-            <h4>Rotation</h4>
+            <div class="header-with-reset">
+                <h4>Rotation</h4>
+                <button class="reset-btn" id="resetRotation">Reset</button>
+            </div>
             <div class="input-group">
                 X: <input type="number" id="rotX-text" step="0.1" value="0" style="color: black;">
                 Y: <input type="number" id="rotY-text" step="0.1" value="0" style="color: black;">
@@ -233,7 +239,10 @@ function createValueDisplay() {
             </div>
         </div>
         <div class="value-group">
-            <h4>Scale</h4>
+            <div class="header-with-reset">
+                <h4>Scale</h4>
+                <button class="reset-btn" id="resetScale">Reset</button>
+            </div>
             <div id="scaleValues">X: 1, Y: 1, Z: 1</div>
         </div>
     `;
@@ -246,6 +255,24 @@ function createValueDisplay() {
             background: rgba(0,0,0,0.3);
             padding: 10px;
             border-radius: 5px;
+        }
+        .header-with-reset {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .reset-btn {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .reset-btn:hover {
+            background: #666;
         }
         .input-group {
             display: grid;
@@ -275,6 +302,40 @@ function createValueDisplay() {
     `;
     document.head.appendChild(style);
     document.querySelector('.controls').appendChild(displayDiv);
+
+    // Add reset button handlers
+    document.getElementById('resetPosition').addEventListener('click', () => {
+        if (model) {
+            model.position.set(0, 0, 0);
+            updateValueDisplay();
+            // Update sliders
+            ['X', 'Y', 'Z'].forEach(axis => {
+                document.getElementById(`pos${axis}`).value = 0;
+            });
+        }
+    });
+
+    document.getElementById('resetRotation').addEventListener('click', () => {
+        if (model) {
+            model.rotation.set(0, 0, 0);
+            updateValueDisplay();
+            // Update sliders
+            ['X', 'Y', 'Z'].forEach(axis => {
+                document.getElementById(`rot${axis}`).value = 0;
+            });
+        }
+    });
+
+    document.getElementById('resetScale').addEventListener('click', () => {
+        if (model) {
+            model.scale.set(1, 1, 1);
+            updateValueDisplay();
+            // Update scale slider if it exists
+            if (document.getElementById('modelScale')) {
+                document.getElementById('modelScale').value = 1;
+            }
+        }
+    });
 
     // Add event listeners for text inputs
     ['X', 'Y', 'Z'].forEach(axis => {
