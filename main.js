@@ -20,7 +20,7 @@ let model; // Define model variable to use it in animation
 
 // Load the 3D model
 loader.load(
-    'https://raw.githubusercontent.com/HShaebi11/PLAY-E-2/refs/heads/main/smile.gltf', // Replace with your model URL
+    'https://github.com/HShaebi11/PLAY-E-2/blob/main/smile.glb', // Replace with your model URL
     function (gltf) {
         model = gltf.scene;
         // Center the model
