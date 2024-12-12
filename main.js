@@ -17,21 +17,30 @@ renderer.setPixelRatio(window.devicePixelRatio);
 
 // Start directly with Three.js setup
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(
+    45,  // Field of view (smaller for more natural perspective)
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+// Set better camera position
+camera.position.set(0, 2, 5);  // Adjusted position
+camera.lookAt(0, 0, 0);  // Make camera look at center
 
 // Enhance lighting setup
-const light = new THREE.DirectionalLight(0xffffff, 2); // Increased intensity
+const light = new THREE.DirectionalLight(0xffffff, 1); // Increased intensity
 light.position.set(5, 5, 5);
 scene.add(light);
 
 // Add more lights for better visibility
-const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Brighter ambient light
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Brighter ambient light
 scene.add(ambientLight);
 
-// Add a point light
-const pointLight = new THREE.PointLight(0xffffff, 1);
-pointLight.position.set(0, 5, 0);
-scene.add(pointLight);
+// Add subtle front light
+const frontLight = new THREE.DirectionalLight(0xffffff, 0.5);
+frontLight.position.set(0, 0, 5);
+scene.add(frontLight);
 
 // Get parent element dimensions
 const container = document.getElementById('three-container');
