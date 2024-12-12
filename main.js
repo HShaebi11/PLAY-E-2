@@ -1,7 +1,23 @@
+// Add WebGL compatibility check at the start
+if ( !THREE.WEBGL.isWebGLAvailable() ) {
+    const warning = THREE.WEBGL.getWebGLErrorMessage();
+    document.getElementById('three-container').appendChild(warning);
+}
+
+// Set up renderer with specific Safari-friendly settings
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
+    failIfMajorPerformanceCaveat: true
+});
+
+// Add pixel ratio handling for Retina displays
+renderer.setPixelRatio(window.devicePixelRatio);
+
 // Start directly with Three.js setup
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
 
 // Get parent element dimensions
 const container = document.getElementById('three-container');
@@ -51,6 +67,13 @@ loader.load(
     },
     function (error) {
         console.error('An error happened:', error);
+        const errorMessage = document.createElement('div');
+        errorMessage.style.position = 'absolute';
+        errorMessage.style.top = '50%';
+        errorMessage.style.width = '100%';
+        errorMessage.style.textAlign = 'center';
+        errorMessage.innerHTML = 'Error loading 3D content';
+        document.getElementById('three-container').appendChild(errorMessage);
     }
 );
 
@@ -105,4 +128,17 @@ window.addEventListener('resize', () => {
     renderer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+});
+
+// Add proper cleanup for Safari
+window.addEventListener('beforeunload', function() {
+    renderer.dispose();
+    if (model) {
+        model.traverse((object) => {
+            if (object.isMesh) {
+                object.geometry.dispose();
+                object.material.dispose();
+            }
+        });
+    }
 });
