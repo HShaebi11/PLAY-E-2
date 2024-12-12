@@ -452,10 +452,14 @@ function captureAndExport() {
         return;
     }
 
-    // Force a render
-    renderer.render(scene, camera);
-    
     try {
+        // Temporarily hide transform controls
+        const wasVisible = transformControls.visible;
+        transformControls.visible = false;
+        
+        // Force a render without controls
+        renderer.render(scene, camera);
+        
         // Get the canvas
         const canvas = renderer.domElement;
         console.log('Canvas captured:', canvas.width, 'x', canvas.height);
@@ -489,9 +493,19 @@ function captureAndExport() {
         pdf.save(`3D_Model_${Date.now()}.pdf`);
         console.log('PDF saved');
         
+        // Restore transform controls visibility
+        transformControls.visible = wasVisible;
+        
+        // Re-render with controls
+        renderer.render(scene, camera);
+        
     } catch (error) {
         console.error('Export failed:', error);
         alert('Export failed. Check console for details.');
+        
+        // Make sure to restore transform controls visibility even if export fails
+        transformControls.visible = true;
+        renderer.render(scene, camera);
     }
 }
 
