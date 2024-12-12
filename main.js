@@ -172,41 +172,13 @@ let transformControls;
 function setupTransformControls() {
     transformControls = new THREE.TransformControls(camera, renderer.domElement);
     scene.add(transformControls);
-
+    
     transformControls.addEventListener('change', () => {
-        if (model) {
-            // Update position sliders
-            document.getElementById('posX').value = model.position.x;
-            document.getElementById('posY').value = model.position.y;
-            document.getElementById('posZ').value = model.position.z;
-
-            // Update rotation sliders
-            document.getElementById('rotX').value = model.rotation.x;
-            document.getElementById('rotY').value = model.rotation.y;
-            document.getElementById('rotZ').value = model.rotation.z;
-        }
         renderer.render(scene, camera);
     });
 
-    // Add mode buttons to controls
-    const transformDiv = document.createElement('div');
-    transformDiv.innerHTML = `
-        <h3>Transform Mode</h3>
-        <button id="translateBtn">Translate</button>
-        <button id="rotateBtn">Rotate</button>
-        <button id="scaleBtn">Scale</button>
-    `;
-    document.querySelector('.controls').appendChild(transformDiv);
-
-    // Add button event listeners
-    document.getElementById('translateBtn').addEventListener('click', () => {
-        transformControls.setMode('translate');
-    });
-    document.getElementById('rotateBtn').addEventListener('click', () => {
-        transformControls.setMode('rotate');
-    });
-    document.getElementById('scaleBtn').addEventListener('click', () => {
-        transformControls.setMode('scale');
+    transformControls.addEventListener('dragging-changed', function (event) {
+        controls.enabled = !event.value;
     });
 }
 
@@ -516,49 +488,22 @@ loader.load(
     function (gltf) {
         model = gltf.scene;
         
-        // Apply initial scale
-        model.scale.set(controls.scale, controls.scale, controls.scale);
+        // Add model to scene first
+        scene.add(model);
         
-        // Apply initial position
-        model.position.set(controls.position.x, controls.position.y, controls.position.z);
-        
-        // Apply initial rotation
-        model.rotation.set(controls.rotation.x, controls.rotation.y, controls.rotation.z);
-
-        // Apply material and color
-        model.traverse((child) => {
-            if (child.isMesh) {
-                child.material = new THREE.MeshStandardMaterial({
-                    color: controls.color,
-                    metalness: 0.3,
-                    roughness: 0.4,
-                    emissive: controls.color,
-                    emissiveIntensity: 0.2
-                });
-                child.material.needsUpdate = true;
-            }
-        });
-        
-        // Attach transform controls to model
+        // Then setup transform controls
         setupTransformControls();
-        createValueDisplay();  // Add value display
-        addExportButton();  // Add export button
         transformControls.attach(model);
         
-        scene.add(model);
+        // Setup other controls
+        createValueDisplay();
+        addExportButton();
     },
     function (xhr) {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
     },
     function (error) {
         console.error('An error happened:', error);
-        const errorMessage = document.createElement('div');
-        errorMessage.style.position = 'absolute';
-        errorMessage.style.top = '50%';
-        errorMessage.style.width = '100%';
-        errorMessage.style.textAlign = 'center';
-        errorMessage.innerHTML = 'Error loading 3D content';
-        document.getElementById('three-container').appendChild(errorMessage);
     }
 );
 
@@ -573,10 +518,6 @@ camera.position.set(
 function animate() {
     requestAnimationFrame(animate);
     
-    // Clear with transparency before each render
-    renderer.clear();
-    
-    updateValueDisplay();
     if (model) {
         renderer.render(scene, camera);
     }
