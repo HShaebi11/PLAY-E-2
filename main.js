@@ -157,8 +157,18 @@ function setupTransformControls() {
     transformControls = new THREE.TransformControls(camera, renderer.domElement);
     scene.add(transformControls);
 
-    // Add event listener for transform changes
     transformControls.addEventListener('change', () => {
+        if (model) {
+            // Update position sliders
+            document.getElementById('posX').value = model.position.x;
+            document.getElementById('posY').value = model.position.y;
+            document.getElementById('posZ').value = model.position.z;
+
+            // Update rotation sliders
+            document.getElementById('rotX').value = model.rotation.x;
+            document.getElementById('rotY').value = model.rotation.y;
+            document.getElementById('rotZ').value = model.rotation.z;
+        }
         renderer.render(scene, camera);
     });
 
@@ -231,13 +241,21 @@ function updateValueDisplay() {
             z: model.scale.z.toFixed(2)
         };
 
-        // Update display
+        // Update display text
         document.getElementById('positionValues').textContent = 
             `Position: X: ${pos.x}, Y: ${pos.y}, Z: ${pos.z}`;
         document.getElementById('rotationValues').textContent = 
             `Rotation: X: ${rot.x}, Y: ${rot.y}, Z: ${rot.z}`;
         document.getElementById('scaleValues').textContent = 
             `Scale: X: ${scale.x}, Y: ${scale.y}, Z: ${scale.z}`;
+
+        // Update slider values
+        document.getElementById('posX').value = model.position.x;
+        document.getElementById('posY').value = model.position.y;
+        document.getElementById('posZ').value = model.position.z;
+        document.getElementById('rotX').value = model.rotation.x;
+        document.getElementById('rotY').value = model.rotation.y;
+        document.getElementById('rotZ').value = model.rotation.z;
     }
 }
 
@@ -349,5 +367,10 @@ document.head.appendChild(style);
 
 // Add transform controls change listener
 transformControls.addEventListener('change', () => {
+    updateValueDisplay();
+});
+
+// Add event listener for transform controls
+transformControls.addEventListener('objectChange', () => {
     updateValueDisplay();
 });
