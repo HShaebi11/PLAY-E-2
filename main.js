@@ -132,6 +132,41 @@ function setupControls() {
 // Call setup after DOM is loaded
 document.addEventListener('DOMContentLoaded', setupControls);
 
+// Add transform controls variable
+let transformControls;
+
+// After scene setup, add this function
+function setupTransformControls() {
+    transformControls = new THREE.TransformControls(camera, renderer.domElement);
+    scene.add(transformControls);
+
+    // Add event listener for transform changes
+    transformControls.addEventListener('change', () => {
+        renderer.render(scene, camera);
+    });
+
+    // Add mode buttons to controls
+    const transformDiv = document.createElement('div');
+    transformDiv.innerHTML = `
+        <h3>Transform Mode</h3>
+        <button id="translateBtn">Translate</button>
+        <button id="rotateBtn">Rotate</button>
+        <button id="scaleBtn">Scale</button>
+    `;
+    document.querySelector('.controls').appendChild(transformDiv);
+
+    // Add button event listeners
+    document.getElementById('translateBtn').addEventListener('click', () => {
+        transformControls.setMode('translate');
+    });
+    document.getElementById('rotateBtn').addEventListener('click', () => {
+        transformControls.setMode('rotate');
+    });
+    document.getElementById('scaleBtn').addEventListener('click', () => {
+        transformControls.setMode('scale');
+    });
+}
+
 // Load the 3D model
 loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
@@ -157,6 +192,10 @@ loader.load(
                 child.material.needsUpdate = true;
             }
         });
+        
+        // Attach transform controls to model
+        setupTransformControls();
+        transformControls.attach(model);
         
         scene.add(model);
     },
@@ -204,7 +243,8 @@ function animate() {
     requestAnimationFrame(animate);
     
     if (model) {
-        // Only apply mouse follow, rotations now controlled by sliders
+        // Remove automatic rotation if you want to use transform controls
+        // Only keep this if you want the mouse follow behavior
         model.position.x += (target.x - model.position.x) * 0.05;
         model.position.y += (target.y - model.position.y) * 0.05;
     }
@@ -234,3 +274,21 @@ window.addEventListener('beforeunload', function() {
         });
     }
 });
+
+// Add some CSS for the transform buttons
+const style = document.createElement('style');
+style.textContent = `
+    .controls button {
+        margin: 5px;
+        padding: 5px 10px;
+        background: #444;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .controls button:hover {
+        background: #666;
+    }
+`;
+document.head.appendChild(style);
