@@ -32,29 +32,73 @@ const loader = new THREE.GLTFLoader();
 
 let model; // Define model variable to use it in animation
 
+// Configuration Variables
+const CONFIG = {
+    version: '1.0.0',
+    model: {
+        position: {
+            x: 0,
+            y: 0,
+            z: 0
+        },
+        rotation: {
+            x: 0.01,
+            y: 0.01,
+            z: 0
+        },
+        scale: {
+            x: 2,
+            y: 2,
+            z: 2
+        },
+        color: 0x00ff00  // Green color in hex
+    },
+    camera: {
+        position: {
+            x: 0,
+            y: 0,
+            z: 10
+        }
+    }
+};
+
+// Color options
+const COLORS = {
+    RED: 0xff0000,
+    GREEN: 0x00ff00,
+    BLUE: 0x0000ff,
+    WHITE: 0xffffff,
+    BLACK: 0x000000,
+    YELLOW: 0xffff00,
+    PURPLE: 0x800080
+};
+
 // Load the 3D model
 loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
     function (gltf) {
         model = gltf.scene;
         
-        // Scale the model (adjust these values as needed)
-        model.scale.set(2, 2, 2);  // Makes the model 2x larger
+        // Apply scale
+        model.scale.set(
+            CONFIG.model.scale.x,
+            CONFIG.model.scale.y,
+            CONFIG.model.scale.z
+        );
         
-        // Center the model
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.x += model.position.x - center.x;
-        model.position.y += model.position.y - center.y;
-        model.position.z += model.position.z - center.z;
+        // Apply initial position
+        model.position.set(
+            CONFIG.model.position.x,
+            CONFIG.model.position.y,
+            CONFIG.model.position.z
+        );
 
-        // Apply color to all materials in the model
+        // Apply color to all materials
         model.traverse((child) => {
             if (child.isMesh) {
-                // Create a new material with the desired color
                 child.material = new THREE.MeshPhongMaterial({
-                    color: 0x00ff00,  // Green color (change this to any hex color)
-                    emissive: 0x222222,  // Slight glow
+                    color: CONFIG.model.color,
+                    emissive: 0x222222,
                     shininess: 30
                 });
             }
@@ -77,16 +121,12 @@ loader.load(
     }
 );
 
-// Adjust camera position to see the model better
-camera.position.z = 10;  // Move camera further back
-
-// Enhance lighting
-const light = new THREE.DirectionalLight(0xffffff, 1.5);  // Increased intensity
-light.position.set(5, 5, 5);  // Adjusted light position
-scene.add(light);
-
-const ambientLight = new THREE.AmbientLight(0x404040, 2);  // Increased ambient light
-scene.add(ambientLight);
+// Update camera position
+camera.position.set(
+    CONFIG.camera.position.x,
+    CONFIG.camera.position.y,
+    CONFIG.camera.position.z
+);
 
 // Mouse interaction variables
 const mouse = new THREE.Vector2();
@@ -110,9 +150,12 @@ function animate() {
     requestAnimationFrame(animate);
     
     if (model) {
-        // Smooth model rotation and position based on mouse position
-        model.rotation.x += 0.01;
-        model.rotation.y += 0.01;
+        // Apply rotation speeds
+        model.rotation.x += CONFIG.model.rotation.x;
+        model.rotation.y += CONFIG.model.rotation.y;
+        model.rotation.z += CONFIG.model.rotation.z;
+        
+        // Mouse follow
         model.position.x += (target.x - model.position.x) * 0.05;
         model.position.y += (target.y - model.position.y) * 0.05;
     }
