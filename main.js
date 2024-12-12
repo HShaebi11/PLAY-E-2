@@ -243,7 +243,11 @@ function createValueDisplay() {
                 <h4>Scale</h4>
                 <button class="reset-btn" id="resetScale">Reset</button>
             </div>
-            <div id="scaleValues">X: 1, Y: 1, Z: 1</div>
+            <div class="input-group">
+                X: <input type="number" id="scaleX-text" step="0.1" value="1" min="0.1" style="color: black;">
+                Y: <input type="number" id="scaleY-text" step="0.1" value="1" min="0.1" style="color: black;">
+                Z: <input type="number" id="scaleZ-text" step="0.1" value="1" min="0.1" style="color: black;">
+            </div>
         </div>
     `;
 
@@ -303,12 +307,47 @@ function createValueDisplay() {
     document.head.appendChild(style);
     document.querySelector('.controls').appendChild(displayDiv);
 
-    // Add reset button handlers
+    // Add event listeners for all inputs including scale
+    ['X', 'Y', 'Z'].forEach(axis => {
+        // Position text inputs
+        const posInput = document.getElementById(`pos${axis}-text`);
+        posInput.addEventListener('input', (e) => {
+            if (model && !isNaN(e.target.value)) {
+                const value = parseFloat(e.target.value);
+                model.position[axis.toLowerCase()] = value;
+                document.getElementById(`pos${axis}`).value = value;
+            }
+        });
+
+        // Rotation text inputs
+        const rotInput = document.getElementById(`rot${axis}-text`);
+        rotInput.addEventListener('input', (e) => {
+            if (model && !isNaN(e.target.value)) {
+                const value = parseFloat(e.target.value);
+                model.rotation[axis.toLowerCase()] = value;
+                document.getElementById(`rot${axis}`).value = value;
+            }
+        });
+
+        // Scale text inputs
+        const scaleInput = document.getElementById(`scale${axis}-text`);
+        scaleInput.addEventListener('input', (e) => {
+            if (model && !isNaN(e.target.value)) {
+                const value = Math.max(0.1, parseFloat(e.target.value));
+                model.scale[axis.toLowerCase()] = value;
+                // Update uniform scale slider if it exists
+                if (document.getElementById('modelScale')) {
+                    document.getElementById('modelScale').value = value;
+                }
+            }
+        });
+    });
+
+    // Update reset handlers
     document.getElementById('resetPosition').addEventListener('click', () => {
         if (model) {
             model.position.set(0, 0, 0);
             updateValueDisplay();
-            // Update sliders
             ['X', 'Y', 'Z'].forEach(axis => {
                 document.getElementById(`pos${axis}`).value = 0;
             });
@@ -319,7 +358,6 @@ function createValueDisplay() {
         if (model) {
             model.rotation.set(0, 0, 0);
             updateValueDisplay();
-            // Update sliders
             ['X', 'Y', 'Z'].forEach(axis => {
                 document.getElementById(`rot${axis}`).value = 0;
             });
@@ -330,41 +368,19 @@ function createValueDisplay() {
         if (model) {
             model.scale.set(1, 1, 1);
             updateValueDisplay();
-            // Update scale slider if it exists
+            ['X', 'Y', 'Z'].forEach(axis => {
+                document.getElementById(`scale${axis}-text`).value = 1;
+            });
             if (document.getElementById('modelScale')) {
                 document.getElementById('modelScale').value = 1;
             }
         }
-    });
-
-    // Add event listeners for text inputs
-    ['X', 'Y', 'Z'].forEach(axis => {
-        // Position text inputs
-        const posInput = document.getElementById(`pos${axis}-text`);
-        posInput.addEventListener('input', (e) => {
-            if (model && !isNaN(e.target.value)) {
-                const value = parseFloat(e.target.value);
-                model.position[axis.toLowerCase()] = value;
-                document.getElementById(`pos${axis}`).value = value; // Update slider
-            }
-        });
-
-        // Rotation text inputs
-        const rotInput = document.getElementById(`rot${axis}-text`);
-        rotInput.addEventListener('input', (e) => {
-            if (model && !isNaN(e.target.value)) {
-                const value = parseFloat(e.target.value);
-                model.rotation[axis.toLowerCase()] = value;
-                document.getElementById(`rot${axis}`).value = value; // Update slider
-            }
-        });
     });
 }
 
 // Add value update function
 function updateValueDisplay() {
     if (model) {
-        // Update text inputs
         ['X', 'Y', 'Z'].forEach(axis => {
             // Position
             document.getElementById(`pos${axis}-text`).value = 
@@ -373,11 +389,11 @@ function updateValueDisplay() {
             // Rotation
             document.getElementById(`rot${axis}-text`).value = 
                 model.rotation[axis.toLowerCase()].toFixed(2);
+            
+            // Scale
+            document.getElementById(`scale${axis}-text`).value = 
+                model.scale[axis.toLowerCase()].toFixed(2);
         });
-
-        // Update scale display
-        document.getElementById('scaleValues').textContent = 
-            `Scale: X: ${model.scale.x.toFixed(2)}, Y: ${model.scale.y.toFixed(2)}, Z: ${model.scale.z.toFixed(2)}`;
     }
 }
 
