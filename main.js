@@ -572,8 +572,14 @@ camera.position.set(
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
+    
+    // Clear with transparency before each render
+    renderer.clear();
+    
     updateValueDisplay();
-    renderer.render(scene, camera);
+    if (model) {
+        renderer.render(scene, camera);
+    }
 }
 animate();
 
