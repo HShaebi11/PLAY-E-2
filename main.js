@@ -626,3 +626,53 @@ transformControls.addEventListener('change', () => {
 transformControls.addEventListener('objectChange', () => {
     updateValueDisplay();
 });
+
+// Add P5.js sketch
+let p5Canvas;
+
+const sketch = function(p) {
+    p.setup = function() {
+        // Create canvas that matches parent size
+        const container = document.querySelector('#three-container').parentElement;
+        p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+        p5Canvas.parent('three-container');
+        p5Canvas.style('position', 'absolute');
+        p5Canvas.style('z-index', '-1');
+        
+        // Set initial background
+        p.background(240);
+    };
+
+    p.draw = function() {
+        let c = p.color(p.sin(p.frameCount * 0.01) * 127 + 128, 
+                        p.sin(p.frameCount * 0.02) * 127 + 128,
+                        p.sin(p.frameCount * 0.03) * 127 + 128);
+        p.background(c);
+    };
+
+    // Handle window resize
+    p.windowResized = function() {
+        const container = document.querySelector('#three-container').parentElement;
+        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+    };
+};
+
+// Create P5 instance
+new p5(sketch);
+
+// Update the three.js container style
+const threeContainer = document.getElementById('three-container');
+threeContainer.style.cssText += `
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: transparent;
+`;
+
+// Make sure Three.js renderer is transparent
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    preserveDrawingBuffer: true,
+    alpha: true
+});
+renderer.setClearColor(0x000000, 0); // Transparent background
