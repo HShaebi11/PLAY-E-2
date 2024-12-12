@@ -7,9 +7,8 @@ if ( !THREE.WEBGL.isWebGLAvailable() ) {
 // Set up renderer with specific Safari-friendly settings
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
-    alpha: true,
-    powerPreference: "high-performance",
-    failIfMajorPerformanceCaveat: true
+    preserveDrawingBuffer: true,
+    alpha: true
 });
 
 // Add pixel ratio handling for Retina displays
@@ -428,31 +427,72 @@ function addExportButton() {
     document.head.appendChild(style);
     
     document.querySelector('.controls').appendChild(exportDiv);
-    document.getElementById('exportPDF').addEventListener('click', captureAndExport);
+    
+    // Add click event with console logging
+    const exportButton = document.getElementById('exportPDF');
+    exportButton.addEventListener('click', function() {
+        console.log('Export button clicked');
+        try {
+            captureAndExport();
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Export failed. Check console for details.');
+        }
+    });
 }
 
-// Separate capture and export functions
+// Updated capture and export function
 function captureAndExport() {
-    // Force a render to ensure latest state
+    console.log('Starting export process');
+    
+    // Ensure jsPDF is available
+    if (typeof window.jspdf === 'undefined') {
+        console.error('jsPDF not loaded');
+        alert('PDF library not loaded. Please refresh the page.');
+        return;
+    }
+
+    // Force a render
     renderer.render(scene, camera);
     
-    // Get the canvas
-    const canvas = renderer.domElement;
-    
-    // Create a temporary canvas with white background
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const ctx = tempCanvas.getContext('2d');
-    
-    // Fill with white background
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw the WebGL canvas on top
-    ctx.drawImage(canvas, 0, 0);
-    
-    // Get the image data
+    try {
+        // Get the canvas
+        const canvas = renderer.domElement;
+        console.log('Canvas captured:', canvas.width, 'x', canvas.height);
+        
+        // Create PDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+        });
+        
+        // Get the image data
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        console.log('Image data captured');
+        
+        // Calculate dimensions
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        // Add the image
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        // Add metadata
+        const date = new Date();
+        pdf.setFontSize(12);
+        pdf.text(`Export Date: ${date.toLocaleString()}`, 10, pdfHeight + 20);
+        
+        // Save
+        console.log('Saving PDF...');
+        pdf.save(`3D_Model_${Date.now()}.pdf`);
+        console.log('PDF saved');
+        
+    } catch (error) {
+        console.error('Export failed:', error);
+        alert('Export failed. Check console for details.');
+    }
 }
 
 // Load the 3D model
