@@ -24,15 +24,28 @@ loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
     function (gltf) {
         model = gltf.scene;
+        
+        // Scale the model (adjust these values as needed)
+        model.scale.set(2, 2, 2);  // Makes the model 2x larger
+        
         // Center the model
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         model.position.x += model.position.x - center.x;
         model.position.y += model.position.y - center.y;
         model.position.z += model.position.z - center.z;
-        
-        // Adjust model scale if needed
-        model.scale.set(1, 1, 1); // Adjust these values as needed
+
+        // Apply color to all materials in the model
+        model.traverse((child) => {
+            if (child.isMesh) {
+                // Create a new material with the desired color
+                child.material = new THREE.MeshPhongMaterial({
+                    color: 0x00ff00,  // Green color (change this to any hex color)
+                    emissive: 0x222222,  // Slight glow
+                    shininess: 30
+                });
+            }
+        });
         
         scene.add(model);
     },
@@ -44,8 +57,16 @@ loader.load(
     }
 );
 
-// Position camera
-camera.position.z = 5;
+// Adjust camera position to see the model better
+camera.position.z = 10;  // Move camera further back
+
+// Enhance lighting
+const light = new THREE.DirectionalLight(0xffffff, 1.5);  // Increased intensity
+light.position.set(5, 5, 5);  // Adjusted light position
+scene.add(light);
+
+const ambientLight = new THREE.AmbientLight(0x404040, 2);  // Increased ambient light
+scene.add(ambientLight);
 
 // Mouse interaction variables
 const mouse = new THREE.Vector2();
