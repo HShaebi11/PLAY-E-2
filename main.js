@@ -4,8 +4,14 @@ alert("Hello, It's Play (E) Tiny 01");
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById('three-container').appendChild(renderer.domElement);
+
+// Get parent element dimensions
+const container = document.getElementById('three-container');
+const parentWidth = container.clientWidth;
+const parentHeight = container.clientHeight;
+
+renderer.setSize(parentWidth, parentHeight);
+container.appendChild(renderer.domElement);
 
 // Create geometry and material
 const geometry = new THREE.BoxGeometry();
@@ -29,8 +35,10 @@ const target = new THREE.Vector2();
 
 // Handle mouse movement
 function onMouseMove(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    // Calculate mouse position relative to container
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / parentWidth) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / parentHeight) * 2 + 1;
     
     // Smooth follow
     target.x = mouse.x * 0.5;
@@ -54,8 +62,8 @@ animate();
 
 // Handle window resize
 window.addEventListener('resize', () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
     renderer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
