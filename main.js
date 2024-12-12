@@ -4,6 +4,7 @@ let transformControls;
 let model;
 let scene;
 let camera;
+let renderer;
 
 // Wait for THREE to be loaded before initializing
 window.addEventListener('load', () => {
@@ -12,14 +13,12 @@ window.addEventListener('load', () => {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
 
-    // Initialize renderer with alpha
-    if (!renderer) {
-        renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true,
-            preserveDrawingBuffer: true
-        });
-    }
+    // Initialize renderer
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        preserveDrawingBuffer: true
+    });
     
     // Setup renderer for transparency
     renderer.setClearColor(0x000000, 0);
@@ -45,6 +44,11 @@ window.addEventListener('load', () => {
     renderer.domElement.style.zIndex = '2';
     renderer.domElement.style.pointerEvents = 'auto';
 
+    // Cleanup previous controls if they exist
+    if (controls) {
+        controls.dispose();
+    }
+    
     // Initialize controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -52,6 +56,9 @@ window.addEventListener('load', () => {
 
     // Setup transform controls
     function setupTransformControls() {
+        if (transformControls) {
+            transformControls.dispose();
+        }
         transformControls = new THREE.TransformControls(camera, renderer.domElement);
         scene.add(transformControls);
 
@@ -75,6 +82,17 @@ window.addEventListener('load', () => {
         }
         
         renderer.render(scene, camera);
+    }
+
+    // Define window resize handler
+    function onWindowResize() {
+        const container = document.getElementById('three-container');
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
+
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
     }
 
     // Start animation
@@ -111,6 +129,13 @@ window.addEventListener('load', () => {
 
     // Handle window resize
     window.addEventListener('resize', onWindowResize, false);
+});
+
+// Cleanup function
+window.addEventListener('unload', () => {
+    if (controls) controls.dispose();
+    if (transformControls) transformControls.dispose();
+    if (renderer) renderer.dispose();
 });
 
 // Add WebGL compatibility check at the start
