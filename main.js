@@ -184,6 +184,63 @@ function setupTransformControls() {
     });
 }
 
+// Add display element creation
+function createValueDisplay() {
+    const displayDiv = document.createElement('div');
+    displayDiv.id = 'valueDisplay';
+    displayDiv.innerHTML = `
+        <h3>Model Values</h3>
+        <div id="positionValues">
+            Position: X: 0, Y: 0, Z: 0
+        </div>
+        <div id="rotationValues">
+            Rotation: X: 0, Y: 0, Z: 0
+        </div>
+        <div id="scaleValues">
+            Scale: X: 1, Y: 1, Z: 1
+        </div>
+    `;
+    displayDiv.style.cssText = `
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+    `;
+    document.querySelector('.controls').appendChild(displayDiv);
+}
+
+// Add value update function
+function updateValueDisplay() {
+    if (model) {
+        // Round values to 2 decimal places
+        const pos = {
+            x: model.position.x.toFixed(2),
+            y: model.position.y.toFixed(2),
+            z: model.position.z.toFixed(2)
+        };
+        const rot = {
+            x: model.rotation.x.toFixed(2),
+            y: model.rotation.y.toFixed(2),
+            z: model.rotation.z.toFixed(2)
+        };
+        const scale = {
+            x: model.scale.x.toFixed(2),
+            y: model.scale.y.toFixed(2),
+            z: model.scale.z.toFixed(2)
+        };
+
+        // Update display
+        document.getElementById('positionValues').textContent = 
+            `Position: X: ${pos.x}, Y: ${pos.y}, Z: ${pos.z}`;
+        document.getElementById('rotationValues').textContent = 
+            `Rotation: X: ${rot.x}, Y: ${rot.y}, Z: ${rot.z}`;
+        document.getElementById('scaleValues').textContent = 
+            `Scale: X: ${scale.x}, Y: ${scale.y}, Z: ${scale.z}`;
+    }
+}
+
 // Load the 3D model
 loader.load(
     'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
@@ -215,6 +272,7 @@ loader.load(
         
         // Attach transform controls to model
         setupTransformControls();
+        createValueDisplay();  // Add value display
         transformControls.attach(model);
         
         scene.add(model);
@@ -244,8 +302,7 @@ camera.position.set(
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
-    
-    // Remove mouse follow behavior, only render the scene
+    updateValueDisplay();
     renderer.render(scene, camera);
 }
 animate();
@@ -289,3 +346,8 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Add transform controls change listener
+transformControls.addEventListener('change', () => {
+    updateValueDisplay();
+});
