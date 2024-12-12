@@ -482,169 +482,111 @@ function captureAndExport() {
     }
 }
 
-// Load the 3D model
-loader.load(
-    'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
-    function (gltf) {
-        model = gltf.scene;
-        
-        // Add model to scene first
-        scene.add(model);
-        
-        // Then setup transform controls
-        setupTransformControls();
-        transformControls.attach(model);
-        
-        // Setup other controls
-        createValueDisplay();
-        addExportButton();
-    },
-    function (xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-    function (error) {
-        console.error('An error happened:', error);
-    }
-);
+// Wait for THREE to be loaded before initializing
+window.addEventListener('load', () => {
+    // Initialize P5.js
+    const sketch = function(p) {
+        p.setup = function() {
+            const container = document.querySelector('#p5-container');
+            p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
+            p5Canvas.parent('p5-container');
+            
+            p5Canvas.style('display', 'block');
+            p5Canvas.style('position', 'absolute');
+            p5Canvas.style('top', '0');
+            p5Canvas.style('left', '0');
+            p5Canvas.style('z-index', '1');
+        };
 
-// Update camera position
-camera.position.set(
-    CONFIG.camera.position.x,
-    CONFIG.camera.position.y,
-    CONFIG.camera.position.z
-);
+        p.draw = function() {
+            p.background(255, 0, 0, 100);
+            p.fill(0, 255, 0);
+            p.noStroke();
+            let size = 100;
+            let x = (p.frameCount % p.width);
+            p.circle(x, p.height/2, size);
+        };
 
-// Animation loop
-function animate() {
-    requestAnimationFrame(animate);
+        p.windowResized = function() {
+            const container = document.querySelector('#p5-container');
+            p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+        };
+    };
+
+    // Create P5 instance
+    new p5(sketch);
+
+    // Initialize Three.js scene and controls
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     
-    if (model) {
-        renderer.render(scene, camera);
-    }
-}
-animate();
+    // Update renderer settings
+    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
 
-// Handle window resize
-window.addEventListener('resize', () => {
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    renderer.setSize(width, height);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-});
+    // Initialize controls after scene setup
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
-// Add proper cleanup for Safari
-window.addEventListener('beforeunload', function() {
-    renderer.dispose();
-    if (model) {
-        model.traverse((object) => {
-            if (object.isMesh) {
-                object.geometry.dispose();
-                object.material.dispose();
+    // Style Three.js canvas
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.zIndex = '2';
+    renderer.domElement.style.pointerEvents = 'auto';
+
+    scene.background = null;
+
+    function setupTransformControls() {
+        transformControls = new THREE.TransformControls(camera, renderer.domElement);
+        scene.add(transformControls);
+
+        transformControls.addEventListener('change', () => {
+            renderer.render(scene, camera);
+        });
+
+        transformControls.addEventListener('dragging-changed', function (event) {
+            if (controls) {
+                controls.enabled = !event.value;
             }
         });
     }
-});
 
-// Add some CSS for the transform buttons
-const style = document.createElement('style');
-style.textContent = `
-    .controls button {
-        margin: 5px;
-        padding: 5px 10px;
-        background: #444;
-        color: white;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-    }
-    .controls button:hover {
-        background: #666;
-    }
-`;
-document.head.appendChild(style);
-
-// Add transform controls change listener
-transformControls.addEventListener('change', () => {
-    updateValueDisplay();
-    renderer.render(scene, camera);
-});
-
-// Add event listener for transform controls
-transformControls.addEventListener('objectChange', () => {
-    updateValueDisplay();
-});
-
-// Add P5.js sketch
-let p5Canvas;
-
-let particles = [];
-
-// P5.js setup with bright, obvious visuals
-const sketch = function(p) {
-    p.setup = function() {
-        const container = document.querySelector('#p5-container');
-        p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
-        p5Canvas.parent('p5-container');
+    function animate() {
+        requestAnimationFrame(animate);
         
-        // Set canvas styles
-        p5Canvas.style('display', 'block');
-        p5Canvas.style('position', 'absolute');
-        p5Canvas.style('top', '0');
-        p5Canvas.style('left', '0');
-        p5Canvas.style('z-index', '1');
-    };
-
-    p.draw = function() {
-        // Very visible animation
-        p.background(255, 0, 0, 100); // Semi-transparent red
+        if (controls) {
+            controls.update();
+        }
         
-        // Draw moving pattern
-        p.fill(0, 255, 0);
-        p.noStroke();
-        let size = 100;
-        let x = (p.frameCount % p.width);
-        p.circle(x, p.height/2, size);
-    };
+        if (model) {
+            renderer.render(scene, camera);
+        }
+    }
 
-    p.windowResized = function() {
-        const container = document.querySelector('#p5-container');
-        p.resizeCanvas(container.offsetWidth, container.offsetHeight);
-    };
-};
+    // Start animation
+    animate();
 
-// Create P5 instance
-new p5(sketch);
-
-// Update existing renderer settings
-renderer.setClearColor(0x000000, 0);
-renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
-
-// Style Three.js canvas
-renderer.domElement.style.position = 'absolute';
-renderer.domElement.style.top = '0';
-renderer.domElement.style.left = '0';
-renderer.domElement.style.zIndex = '2';
-renderer.domElement.style.pointerEvents = 'auto';
-
-// Make scene background transparent
-scene.background = null;
-
-// Add this to your existing window resize handler
-function onWindowResize() {
-    const width = threeContainer.offsetWidth;
-    const height = threeContainer.offsetHeight;
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-}
-
-// Update animation loop
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
+    // Load model
+    loader.load(
+        'https://cdn.jsdelivr.net/gh/HShaebi11/PLAY-E-2@main/smile.glb',
+        function (gltf) {
+            model = gltf.scene;
+            scene.add(model);
+            setupTransformControls();
+            transformControls.attach(model);
+            createValueDisplay();
+            addExportButton();
+        },
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        function (error) {
+            console.error('An error happened:', error);
+        }
+    );
+});
 
 // Add container styles
 document.head.insertAdjacentHTML('beforeend', `
