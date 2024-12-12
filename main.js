@@ -646,28 +646,24 @@ const sketch = function(p) {
         p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
         p5Canvas.parent('p5-container');
         
-        // Debug styling
+        // Set canvas styles
+        p5Canvas.style('display', 'block');
         p5Canvas.style('position', 'absolute');
         p5Canvas.style('top', '0');
         p5Canvas.style('left', '0');
-        p5Canvas.style('z-index', '0'); // Changed to 0
+        p5Canvas.style('z-index', '1');
     };
 
     p.draw = function() {
-        // Bright, obvious background pattern
-        p.background(0); // Black background
-        p.noStroke();
+        // Very visible animation
+        p.background(255, 0, 0, 100); // Semi-transparent red
         
-        // Draw bright moving circles
-        for(let i = 0; i < 5; i++) {
-            p.fill(255, 0, 0); // Bright red
-            let x = (p.frameCount + i * 100) % p.width;
-            p.circle(x, p.height/2, 50);
-            
-            p.fill(0, 255, 0); // Bright green
-            let y = (p.frameCount + i * 100) % p.height;
-            p.circle(p.width/2, y, 50);
-        }
+        // Draw moving pattern
+        p.fill(0, 255, 0);
+        p.noStroke();
+        let size = 100;
+        let x = (p.frameCount % p.width);
+        p.circle(x, p.height/2, size);
     };
 
     p.windowResized = function() {
@@ -686,45 +682,54 @@ const renderer = new THREE.WebGLRenderer({
     alpha: true
 });
 
-// Debug setup for Three.js
-renderer.setClearColor(0x000000, 0); // Transparent background
+// Set up renderer
 renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
 threeContainer.appendChild(renderer.domElement);
+renderer.setClearColor(0x000000, 0);
 
-// Set Three.js canvas style
+// Style Three.js canvas
 renderer.domElement.style.position = 'absolute';
 renderer.domElement.style.top = '0';
 renderer.domElement.style.left = '0';
-renderer.domElement.style.zIndex = '1';
-renderer.domElement.style.background = 'transparent';
+renderer.domElement.style.zIndex = '2';
 renderer.domElement.style.pointerEvents = 'auto';
 
 // Make scene background transparent
 scene.background = null;
 
-// Add some console logs for debugging
-console.log('P5 container:', document.querySelector('#p5-container'));
-console.log('Three.js container:', document.querySelector('#three-container'));
-console.log('P5 canvas:', p5Canvas);
-console.log('Three.js canvas:', renderer.domElement);
+// Add this to your existing window resize handler
+function onWindowResize() {
+    const width = threeContainer.offsetWidth;
+    const height = threeContainer.offsetHeight;
 
-// Update animation function
-function animate() {
-    requestAnimationFrame(animate);
-    
-    // Clear with transparency
-    renderer.clear();
-    
-    if (model) {
-        renderer.render(scene, camera);
-    }
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
 }
 
-// Update the three.js container style
-const threeContainer = document.getElementById('three-container');
-threeContainer.style.cssText += `
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background: transparent;
+// Update animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+
+// Add these styles programmatically
+const style = document.createElement('style');
+style.textContent = `
+    #p5-container, #three-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    #p5-container {
+        z-index: 1;
+    }
+    #three-container {
+        z-index: 2;
+        pointer-events: auto;
+        background: transparent;
+    }
 `;
+document.head.appendChild(style);
