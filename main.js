@@ -626,3 +626,75 @@ transformControls.addEventListener('change', () => {
 transformControls.addEventListener('objectChange', () => {
     updateValueDisplay();
 });
+
+// P5.js initialization with interactive grid
+let cols = 20;
+let rows = 20;
+let grid = [];
+
+const p5Container = document.getElementById('p5-container');
+const p5Sketch = new p5(function(p) {
+    p.setup = function() {
+        p5Canvas = p.createCanvas(p5Container.offsetWidth, p5Container.offsetHeight);
+        p5Canvas.parent('p5-container');
+        
+        // Style P5 canvas
+        p5Canvas.style('display', 'block');
+        p5Canvas.style('position', 'absolute');
+        p5Canvas.style('top', '0');
+        p5Canvas.style('left', '0');
+        p5Canvas.style('z-index', '1');
+        
+        p.noStroke();
+
+        // Calculate the size of each cell based on container size
+        let cellWidth = p.width / cols;
+        let cellHeight = p.height / rows;
+
+        // Initialize the grid
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let x = i * cellWidth + cellWidth / 2;
+                let y = j * cellHeight + cellHeight / 2;
+                grid.push({ x, y, baseRadius: cellWidth / 3 });
+            }
+        }
+    };
+
+    p.draw = function() {
+        p.background(30, 200); // Added some transparency
+
+        // Draw the grid and add mouse interaction
+        for (let cell of grid) {
+            let d = p.dist(p.mouseX, p.mouseY, cell.x, cell.y);
+            let maxDist = p.width / cols;
+
+            // Change size based on proximity to the mouse
+            let radius = cell.baseRadius + p.map(p.constrain(d, 0, maxDist), 0, maxDist, 10, 0);
+
+            // Change color based on proximity to the mouse
+            let col = p.map(p.constrain(d, 0, maxDist), 0, maxDist, 255, 100);
+            p.fill(col, 150, 255 - col, 200); // Added some transparency
+
+            // Draw the circle
+            p.ellipse(cell.x, cell.y, radius);
+        }
+    };
+
+    p.windowResized = function() {
+        p.resizeCanvas(p5Container.offsetWidth, p5Container.offsetHeight);
+        
+        // Recalculate grid on resize
+        grid = [];
+        let cellWidth = p.width / cols;
+        let cellHeight = p.height / rows;
+        
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let x = i * cellWidth + cellWidth / 2;
+                let y = j * cellHeight + cellHeight / 2;
+                grid.push({ x, y, baseRadius: cellWidth / 3 });
+            }
+        }
+    };
+});
