@@ -662,7 +662,7 @@ const p5Sketch = new p5(function(p) {
     };
 
     p.draw = function() {
-        p.background(30, 200); // Added some transparency
+        p.background(30); // Removed transparency
 
         // Draw the grid and add mouse interaction
         for (let cell of grid) {
@@ -674,7 +674,7 @@ const p5Sketch = new p5(function(p) {
 
             // Change color based on proximity to the mouse
             let col = p.map(p.constrain(d, 0, maxDist), 0, maxDist, 255, 100);
-            p.fill(col, 150, 255 - col, 200); // Added some transparency
+            p.fill(col, 150, 255 - col); // Removed transparency
 
             // Draw the circle
             p.ellipse(cell.x, cell.y, radius);
