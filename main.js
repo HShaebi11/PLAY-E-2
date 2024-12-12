@@ -1,4 +1,5 @@
-alert("Hello, It's Play (E) Tiny 01");
+// Remove this line:
+// alert("Hello, It's Play (E) Tiny 01");
 
 // Set up Three.js scene, camera, and renderer
 const scene = new THREE.Scene();
