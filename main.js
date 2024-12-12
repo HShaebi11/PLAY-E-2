@@ -51,7 +51,6 @@ const CONFIG = {
             y: 2,
             z: 2
         },
-        color: 0x00ff00  // Green color in hex
     },
     camera: {
         position: {
@@ -62,16 +61,8 @@ const CONFIG = {
     }
 };
 
-// Color options
-const COLORS = {
-    RED: 0xff0000,
-    GREEN: 0x00ff00,
-    BLUE: 0x0000ff,
-    WHITE: 0xffffff,
-    BLACK: 0x000000,
-    YELLOW: 0xffff00,
-    PURPLE: 0x800080
-};
+// Simple color variable at the top
+const modelColor = 0xff0000; // Red color (change this hex value as needed)
 
 // Load the 3D model
 loader.load(
