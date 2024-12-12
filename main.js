@@ -221,34 +221,11 @@ camera.position.set(
     CONFIG.camera.position.z
 );
 
-// Mouse interaction variables
-const mouse = new THREE.Vector2();
-const target = new THREE.Vector2();
-
-// Handle mouse movement
-function onMouseMove(event) {
-    // Calculate mouse position relative to container
-    const rect = container.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / parentWidth) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / parentHeight) * 2 + 1;
-    
-    // Smooth follow
-    target.x = mouse.x * 0.5;
-    target.y = mouse.y * 0.5;
-}
-window.addEventListener('mousemove', onMouseMove);
-
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
     
-    if (model) {
-        // Remove automatic rotation if you want to use transform controls
-        // Only keep this if you want the mouse follow behavior
-        model.position.x += (target.x - model.position.x) * 0.05;
-        model.position.y += (target.y - model.position.y) * 0.05;
-    }
-    
+    // Remove mouse follow behavior, only render the scene
     renderer.render(scene, camera);
 }
 animate();
