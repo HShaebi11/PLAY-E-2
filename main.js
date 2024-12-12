@@ -491,20 +491,27 @@ window.addEventListener('load', () => {
             p5Canvas = p.createCanvas(container.offsetWidth, container.offsetHeight);
             p5Canvas.parent('p5-container');
             
-            p5Canvas.style('display', 'block');
+            // Ensure P5 canvas is visible
             p5Canvas.style('position', 'absolute');
             p5Canvas.style('top', '0');
             p5Canvas.style('left', '0');
-            p5Canvas.style('z-index', '1');
+            p5Canvas.style('z-index', '-1'); // Put behind Three.js
+            
+            p.background(240);
         };
 
         p.draw = function() {
-            p.background(255, 0, 0, 100);
-            p.fill(0, 255, 0);
-            p.noStroke();
-            let size = 100;
-            let x = (p.frameCount % p.width);
-            p.circle(x, p.height/2, size);
+            // Make background more visible
+            p.background(240, 200); // Light background with higher opacity
+            let noiseScale = 0.02;
+            for(let x = 0; x < p.width; x += 10) {
+                for(let y = 0; y < p.height; y += 10) {
+                    let noiseVal = p.noise(x * noiseScale, y * noiseScale, p.frameCount * 0.01);
+                    p.stroke(noiseVal * 255);
+                    p.strokeWeight(2); // Make points more visible
+                    p.point(x + noiseVal * 5, y + noiseVal * 5);
+                }
+            }
         };
 
         p.windowResized = function() {
@@ -523,20 +530,22 @@ window.addEventListener('load', () => {
     // Update renderer settings
     renderer.setClearColor(0x000000, 0);
     renderer.setSize(threeContainer.offsetWidth, threeContainer.offsetHeight);
+    threeContainer.appendChild(renderer.domElement);
+
+    // Set Three.js canvas style
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.zIndex = '1'; // Above P5.js
+    renderer.domElement.style.background = 'transparent';
+
+    // Make sure scene background is transparent
+    scene.background = null;
 
     // Initialize controls after scene setup
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-
-    // Style Three.js canvas
-    renderer.domElement.style.position = 'absolute';
-    renderer.domElement.style.top = '0';
-    renderer.domElement.style.left = '0';
-    renderer.domElement.style.zIndex = '2';
-    renderer.domElement.style.pointerEvents = 'auto';
-
-    scene.background = null;
 
     function setupTransformControls() {
         transformControls = new THREE.TransformControls(camera, renderer.domElement);
