@@ -200,62 +200,97 @@ function createValueDisplay() {
     displayDiv.id = 'valueDisplay';
     displayDiv.innerHTML = `
         <h3>Model Values</h3>
-        <div id="positionValues">
-            Position: X: 0, Y: 0, Z: 0
+        <div class="value-group">
+            <h4>Position</h4>
+            <div class="input-group">
+                X: <input type="number" id="posX-text" step="0.1" value="0">
+                Y: <input type="number" id="posY-text" step="0.1" value="0">
+                Z: <input type="number" id="posZ-text" step="0.1" value="0">
+            </div>
         </div>
-        <div id="rotationValues">
-            Rotation: X: 0, Y: 0, Z: 0
+        <div class="value-group">
+            <h4>Rotation</h4>
+            <div class="input-group">
+                X: <input type="number" id="rotX-text" step="0.1" value="0">
+                Y: <input type="number" id="rotY-text" step="0.1" value="0">
+                Z: <input type="number" id="rotZ-text" step="0.1" value="0">
+            </div>
         </div>
-        <div id="scaleValues">
-            Scale: X: 1, Y: 1, Z: 1
+        <div class="value-group">
+            <h4>Scale</h4>
+            <div id="scaleValues">X: 1, Y: 1, Z: 1</div>
         </div>
     `;
-    displayDiv.style.cssText = `
-        background: rgba(0,0,0,0.7);
-        color: white;
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 5px;
-        font-family: monospace;
+
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .value-group {
+            margin: 10px 0;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .input-group input {
+            width: 60px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 3px;
+            border-radius: 3px;
+            color: black;
+        }
+        h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #fff;
+        }
     `;
+    document.head.appendChild(style);
     document.querySelector('.controls').appendChild(displayDiv);
+
+    // Add event listeners for text inputs
+    ['X', 'Y', 'Z'].forEach(axis => {
+        // Position text inputs
+        document.getElementById(`pos${axis}-text`).addEventListener('change', (e) => {
+            if (model) {
+                model.position[axis.toLowerCase()] = parseFloat(e.target.value);
+                document.getElementById(`pos${axis}`).value = e.target.value; // Update slider
+            }
+        });
+
+        // Rotation text inputs
+        document.getElementById(`rot${axis}-text`).addEventListener('change', (e) => {
+            if (model) {
+                model.rotation[axis.toLowerCase()] = parseFloat(e.target.value);
+                document.getElementById(`rot${axis}`).value = e.target.value; // Update slider
+            }
+        });
+    });
 }
 
 // Add value update function
 function updateValueDisplay() {
     if (model) {
-        // Round values to 2 decimal places
-        const pos = {
-            x: model.position.x.toFixed(2),
-            y: model.position.y.toFixed(2),
-            z: model.position.z.toFixed(2)
-        };
-        const rot = {
-            x: model.rotation.x.toFixed(2),
-            y: model.rotation.y.toFixed(2),
-            z: model.rotation.z.toFixed(2)
-        };
-        const scale = {
-            x: model.scale.x.toFixed(2),
-            y: model.scale.y.toFixed(2),
-            z: model.scale.z.toFixed(2)
-        };
+        // Update text inputs
+        ['X', 'Y', 'Z'].forEach(axis => {
+            // Position
+            document.getElementById(`pos${axis}-text`).value = 
+                model.position[axis.toLowerCase()].toFixed(2);
+            
+            // Rotation
+            document.getElementById(`rot${axis}-text`).value = 
+                model.rotation[axis.toLowerCase()].toFixed(2);
+        });
 
-        // Update display text
-        document.getElementById('positionValues').textContent = 
-            `Position: X: ${pos.x}, Y: ${pos.y}, Z: ${pos.z}`;
-        document.getElementById('rotationValues').textContent = 
-            `Rotation: X: ${rot.x}, Y: ${rot.y}, Z: ${rot.z}`;
+        // Update scale display
         document.getElementById('scaleValues').textContent = 
-            `Scale: X: ${scale.x}, Y: ${scale.y}, Z: ${scale.z}`;
-
-        // Update slider values
-        document.getElementById('posX').value = model.position.x;
-        document.getElementById('posY').value = model.position.y;
-        document.getElementById('posZ').value = model.position.z;
-        document.getElementById('rotX').value = model.rotation.x;
-        document.getElementById('rotY').value = model.rotation.y;
-        document.getElementById('rotZ').value = model.rotation.z;
+            `Scale: X: ${model.scale.x.toFixed(2)}, Y: ${model.scale.y.toFixed(2)}, Z: ${model.scale.z.toFixed(2)}`;
     }
 }
 
@@ -368,6 +403,7 @@ document.head.appendChild(style);
 // Add transform controls change listener
 transformControls.addEventListener('change', () => {
     updateValueDisplay();
+    renderer.render(scene, camera);
 });
 
 // Add event listener for transform controls
