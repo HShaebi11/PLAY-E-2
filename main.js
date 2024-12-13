@@ -1,3 +1,9 @@
+// Add debug checks at the start of your file
+console.log('THREE loaded:', typeof THREE !== 'undefined');
+console.log('GLTFLoader loaded:', typeof GLTFLoader !== 'undefined');
+console.log('OrbitControls loaded:', typeof THREE.OrbitControls !== 'undefined');
+console.log('TransformControls loaded:', typeof THREE.TransformControls !== 'undefined');
+
 // Add WebGL compatibility check at the start
 if (!THREE.WEBGL.isWebGLAvailable()) {
     const warning = THREE.WEBGL.getWebGLErrorMessage();
@@ -51,7 +57,7 @@ renderer.setSize(parentWidth, parentHeight);
 container.appendChild(renderer.domElement);
 
 // Add GLTFLoader
-const loader = new GLTFLoader(); // Make sure GLTFLoader is properly imported
+const loader = new GLTFLoader();
 
 let model; // Define model variable to use it in animation
 
