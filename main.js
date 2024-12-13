@@ -1,5 +1,5 @@
 // Add WebGL compatibility check at the start
-if ( !THREE.WEBGL.isWebGLAvailable() ) {
+if (!THREE.WEBGL.isWebGLAvailable()) {
     const warning = THREE.WEBGL.getWebGLErrorMessage();
     document.getElementById('three-container').appendChild(warning);
 }
@@ -34,14 +34,24 @@ scene.add(pointLight);
 
 // Get parent element dimensions
 const container = document.getElementById('three-container');
-const parentWidth = container.clientWidth;
-const parentHeight = container.clientHeight;
+if (!container) {
+    console.error('Could not find three-container element');
+    // Create container if it doesn't exist
+    const newContainer = document.createElement('div');
+    newContainer.id = 'three-container';
+    newContainer.style.width = '100vw';
+    newContainer.style.height = '100vh';
+    document.body.appendChild(newContainer);
+}
+
+const parentWidth = container.clientWidth || window.innerWidth;
+const parentHeight = container.clientHeight || window.innerHeight;
 
 renderer.setSize(parentWidth, parentHeight);
 container.appendChild(renderer.domElement);
 
 // Add GLTFLoader
-const loader = new THREE.GLTFLoader();
+const loader = new GLTFLoader(); // Make sure GLTFLoader is properly imported
 
 let model; // Define model variable to use it in animation
 
@@ -169,7 +179,7 @@ let transformControls;
 
 // After scene setup, add this function
 function setupTransformControls() {
-    transformControls = new THREE.TransformControls(camera, renderer.domElement);
+    transformControls = new TransformControls(camera, renderer.domElement);
     scene.add(transformControls);
 
     transformControls.addEventListener('change', () => {
@@ -545,6 +555,9 @@ loader.load(
         transformControls.attach(model);
         
         scene.add(model);
+        
+        // Log successful model loading
+        console.log('Model loaded successfully');
     },
     function (xhr) {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
